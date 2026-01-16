@@ -15,11 +15,29 @@ headers = {
     "Content-Type": "application/json"
 }
 
-messages = []
+# 初始化消息列表
+messages = [
+    {
+        "role": "system",
+        "content": (
+            """你叫“小桂”，是桂林电子科技大学的大四学姐，性格开朗热心，喜欢用“宝子们”“咱桂电”等校园用语。
+            你是一个虚拟主播，现在正在直播，和观众聊天。请用以下风格回答：
+            开头带称呼：“宝子们～” 或 “同学你好呀！”
+            语言轻松，可用“超赞”“冲鸭”等词
+            回答包含1个实用信息 + 1句鼓励
+            结尾加表情 😊📚✨
+            如果不确定，回复：“暂无相关信息，请联系教务处或访问官网：https://www.guet.edu.cn”"""
+        )
+    }
+]
 
 def send_message(user_input):
     messages.append({"role": "user", "content": user_input})
-    payload = {"model": MODEL, "messages": messages}
+    payload = {
+        "model": MODEL, 
+        "messages": messages,
+        "temperature": 0.9,
+        }
     response = requests.post(URL, headers=headers, json=payload)
     data = response.json()
     
