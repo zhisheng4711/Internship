@@ -5,47 +5,46 @@ import json
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
-API_KEY = os.getenv("DASHSCOPE_API_KEY")
-URL = "https://qianfan.baidubce.com/v2/chat/completions"
-MODEL = "ernie-4.5-turbo-128k"
+# 加载模型配置
+def load_model_config(path="config/model_config.json"):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+# 加载提示词
+def load_system_prompt(path="docs/prompt_examples.md"):
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+    
+load_dotenv()       # 加载环境变量
+config = load_model_config()    # 读取模型配置
+system_prompt = load_system_prompt()    # 读取系统提示词
+GENERATION_CONFIG = config["generation"]    # 读取生成参数
+API_KEY = os.getenv("DASHSCOPE_API_KEY")    # 获取API密钥
+URL = config["api"]["url"]  # 获取API URL
+MODEL = config["api"]["model"]  # 获取模型名称
 
 headers = {
     "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json"
-}
+}   # 设置请求头
 
-# 初始化消息列表
-messages = [
-    {
-        "role": "system",
-        "content": (
-            """你叫“小桂”，是桂林电子科技大学的大四学姐，性格开朗热心，喜欢用“宝子们”“咱桂电”等校园用语。
-            你是一个虚拟主播，现在正在直播，和观众聊天。请用以下风格回答：
-            开头带称呼：“宝子们～” 或 “同学你好呀！”
-            语言轻松，可用“超赞”“冲鸭”等词
-            回答包含1个实用信息 + 1句鼓励
-            结尾加表情 😊📚✨
-            如果不确定，回复：“暂无相关信息，请联系教务处或访问官网：https://www.guet.edu.cn”"""
-        )
-    }
-]
+# 初始化对话消息
+messages = [{"role": "system", "content": system_prompt}]
 
 def send_message(user_input):
     messages.append({"role": "user", "content": user_input})
     payload = {
-        "model": MODEL, 
-        "messages": messages,
-        "temperature": 0.9,
-        }
-    response = requests.post(URL, headers=headers, json=payload)
+    "model": MODEL,
+    "messages": messages,   
+    **GENERATION_CONFIG
+    }
+    response = requests.post(URL, headers=headers, json=payload)    
     data = response.json()
     
-    if 'choices' in data:
+    if 'choices' in data:   # 成功响应
         ai_reply = data['choices'][0]['message']['content']
-        messages.append({"role": "assistant", "content": ai_reply})
+        messages.append({"role": "assistant", "content": ai_reply}) 
         return ai_reply
-    else:
+    else:   # 错误响应
         error_msg = data.get('error', {}).get('message', '未知错误')
         return f"❌ 调用失败: {error_msg}"
 

@@ -1,0 +1,11 @@
+{
+  "api": {
+    "url": "https://qianfan.baidubce.com/v2/chat/completions",
+    "model": "ernie-4.5-turbo-128k"
+  },
+  "generation": {
+    "temperature": 0.9,
+    "top_p": 0.9,
+    "max_tokens": 1024
+  }
+}
