@@ -11,16 +11,14 @@
 
 | 文件/文件夹 | 作用 |
 |------------|------|
-| `api_call.py` | 第一周的任务 |
-| `chatbot.py` | 主程序：实现本地聊天机器人功能，支持多轮对话与人设控制 |
-| `test_model.py` | 测试脚本：批量测试 Prompt 效果，记录输出表现 |
-| `.env` | 存放 API 密钥等敏感信息（已加密，不上传 GitHub） |
-| `.gitignore` | 告诉 Git 忽略哪些文件（如 `.env`、`venv/`） |
-| `data/` | 存放测试数据、问题集、知识库等 |
-| `docs/` | 存放设计文档、中期报告、Prompt 示例等 |
-| `venv/` | 虚拟环境。编译器选这里的就行了 |
-| `config/` | 配置文件（如模型参数、API 地址） |
-| `__pycache__/` | Python 缓存文件（自动忽略） |
+├── web_app.py # 主程序：Flask Web 服务 + 内嵌 HTML 界面
+├── chatbot.py # 核心逻辑：ChatBot 类，封装 DashScope 调用
+├── config/ # 配置文件（模型参数、Prompt 模板等）
+├── data/ # 测试问题集、知识库样本
+├── docs/ # 设计文档、Prompt 示例、中期报告
+├── test_model.py # 批量测试脚本（用于评估回复质量）
+├── .env # API 密钥（示例：DASHSCOPE_API_KEY=sk-xxx）
+├── .gitignore # 自动忽略敏感文件（.env, venv/, pycache/）
 
 ---
 
