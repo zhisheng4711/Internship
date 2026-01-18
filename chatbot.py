@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Optional
 from dotenv import load_dotenv
+from config import MODEL_CONFIG_PATH, PROMPT_PATH, MAX_HISTORY_ROUNDS, TIMEOUT
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -15,14 +16,13 @@ logger = logging.getLogger(__name__)
 class ChatBot:  # 聊天机器人类
     def __init__(   
         self,   # 实例本身
-        model_config_path: str = "config/model_config.json",    # 模型配置文件路径
-        prompt_path: str = "docs/prompt_examples.md",   # 系统提示词文件路径
-        max_history_rounds: int = 10,   # 最大保留对话轮数（不包括 system）
-        timeout: int = 30   # API 请求超时时间（秒）
+        model_config_path: str = MODEL_CONFIG_PATH,    # 模型配置文件路径
+        prompt_path: str = PROMPT_PATH,   # 系统提示词文件路径
+        max_history_rounds: int = MAX_HISTORY_ROUNDS,   # 最大保留对话轮数（不包括 system）
+        timeout: int = TIMEOUT   # API 请求超时时间（秒）
     ):  
         """ 
         初始化聊天机器人。  
-        
         :param model_config_path: 模型配置文件路径
         :param prompt_path: 系统提示词文件路径
         :param max_history_rounds: 最大保留对话轮数（不包括 system）
@@ -88,7 +88,7 @@ class ChatBot:  # 聊天机器人类
             "messages": self.messages,
             **self.generation_config
         }
-
+        #   发送请求
         logger.info(f"用户输入: {user_input[:50]}...")
         try:
             response = requests.post(
@@ -109,7 +109,7 @@ class ChatBot:  # 聊天机器人类
                 error_msg = data.get('error', {}).get('message', '未知错误')
                 logger.error(f"API 返回错误: {error_msg}")
                 return f"❌ 调用失败: {error_msg}"
-
+        #   处理常见请求异常
         except requests.exceptions.Timeout:
             logger.error("请求超时")
             return "❌ 请求超时，请稍后再试。"
