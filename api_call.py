@@ -1,24 +1,32 @@
-import requests
-import json
-from dotenv import load_dotenv
-import os
-load_dotenv()
-API_KEY = os.getenv("DASHSCOPE_API_KEY")
-url = "https://qianfan.baidubce.com/v2/chat/completions"
+from chatbot import ChatBot
 
-headers = {
-    "Authorization": f"Bearer {API_KEY}",
-    "Content-Type": "application/json"
-}
+def main():
+    try:
+        bot = ChatBot()
+    except Exception as e:
+        print(f"❌ 初始化失败: {e}")
+        return
 
-user_input = input("请输入你的问题: ")
+    print("🤖 欢迎使用 AI 聊天机器人！输入 '退出' 结束对话，'清空' 清除历史。")
+    while True:
+        try:
+            user_input = input("\n你: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\n👋 再见！")
+            break
 
-def call_qianfan(prompt):
-    data = {
-        "model": "ernie-4.5-turbo-128k",
-        "messages": [{"role": "user", "content": prompt}]
-    }
-    res = requests.post(url, headers=headers, data=json.dumps(data))
-    return res.json()["choices"][0]["message"]["content"]
+        if user_input.lower() in ['退出', 'quit', 'exit']:
+            print("👋 再见！")
+            break
+        elif user_input.lower() == '清空':
+            bot.clear_history()
+            print("✅ 对话历史已清空。")
+            continue
+        if not user_input:
+            continue
 
-print(call_qianfan(user_input))
+        reply = bot.send_message(user_input)
+        print(f"\nAI: {reply}")
+
+if __name__ == "__main__":
+    main()

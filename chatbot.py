@@ -12,27 +12,13 @@ from config import MODEL_CONFIG_PATH, PROMPT_PATH, MAX_HISTORY_ROUNDS, TIMEOUT
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
+load_dotenv()
 class ChatBot:  # 聊天机器人类
-    def __init__(   
-        self,   # 实例本身
-        model_config_path: str = MODEL_CONFIG_PATH,    # 模型配置文件路径
-        prompt_path: str = PROMPT_PATH,   # 系统提示词文件路径
-        max_history_rounds: int = MAX_HISTORY_ROUNDS,   # 最大保留对话轮数（不包括 system）
-        timeout: int = TIMEOUT   # API 请求超时时间（秒）
-    ):  
-        """ 
-        初始化聊天机器人。  
-        :param model_config_path: 模型配置文件路径
-        :param prompt_path: 系统提示词文件路径
-        :param max_history_rounds: 最大保留对话轮数（不包括 system）
-        :param timeout: API 请求超时时间（秒）
-        """
-        load_dotenv()   # 加载环境变量
-        self.model_config_path = Path(model_config_path)    
-        self.prompt_path = Path(prompt_path)    
-        self.max_history_rounds = max_history_rounds    
-        self.timeout = timeout  
+    def __init__(self):
+        self.model_config_path = Path(MODEL_CONFIG_PATH)
+        self.prompt_path = Path(PROMPT_PATH)
+        self.max_history_rounds = MAX_HISTORY_ROUNDS
+        self.timeout = TIMEOUT
 
         # 加载配置
         self.config = self._load_model_config()
@@ -127,27 +113,3 @@ class ChatBot:  # 聊天机器人类
         """清空对话历史（保留 system prompt）"""
         self.messages = [{"role": "system", "content": self.system_prompt}]
         logger.info("对话历史已清空。")
-
-
-# CLI 入口（保持兼容）
-if __name__ == "__main__":
-    try:
-        bot = ChatBot()
-    except Exception as e:
-        print(f"初始化失败: {e}")
-        exit(1)
-
-    print("🤖 欢迎使用 AI 聊天机器人！输入 '退出' 结束对话，'清空' 清除历史。")
-    while True:
-        user_input = input("\n你: ").strip()
-        if user_input.lower() in ['退出', 'quit', 'exit']:
-            print("👋 再见！")
-            break
-        elif user_input.lower() == '清空':
-            bot.clear_history()
-            print("✅ 对话历史已清空。")
-            continue
-        if not user_input:
-            continue
-        reply = bot.send_message(user_input)
-        print(f"\nAI: {reply}")

@@ -1,10 +1,9 @@
 # config.py
 
 # 模型配置文件路径
-MODEL_CONFIG_PATH = "config/model_config.json"
-
+MODEL_CONFIG_PATH = "docs/model_config.json"
 # 系统提示词文件路径
-PROMPT_PATH = "config/prompt_examples.md"  
+PROMPT_PATH = "docs/prompt_examples.md"  
 
 # 可选：其他全局参数
 MAX_HISTORY_ROUNDS = 10 # 最大保留对话轮数
