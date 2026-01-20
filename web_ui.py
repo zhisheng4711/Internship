@@ -1,97 +1,83 @@
-# web_app.py
-
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
+import hashlib
 from chatbot import ChatBot
-import threading
 
 app = Flask(__name__)
+app.secret_key = 'your-secret-key-here'  # ⚠️ 替换为随机字符串（生产环境必须保密）
 
-# 全局机器人实例（注意：生产环境应改用会话隔离）
-bot = ChatBot()
+# 模拟数据库（实际应使用数据库）
+users_db = {}  # {username: {password_hash, is_admin}}
 
-# 简单 HTML 模板（内嵌）
-HTML_TEMPLATE = '''
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AI 聊天机器人</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
-        #chat { border: 1px solid #ccc; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; background: #f9f9f9; }
-        .user { color: blue; }
-        .ai { color: green; }
-        input[type="text"] { width: 70%; padding: 8px; }
-        button { padding: 8px 16px; }
-        .controls { margin-top: 10px; }
-    </style>
-</head>
-<body>
-    <h2>🤖 AI 聊天机器人</h2>
-    <div id="chat"></div>
-    <input type="text" id="userInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter') sendMessage()" />
-    <button onclick="sendMessage()">发送</button>
-    <div class="controls">
-        <button onclick="clearHistory()">清空历史</button>
-        <button onclick="location.reload()">重启会话</button>
-    </div>
-
-    <script>
-        function appendMessage(role, text) {
-            const chat = document.getElementById('chat');
-            const p = document.createElement('p');
-            p.className = role;
-            p.innerHTML = '<b>' + (role === 'user' ? '👤 你:' : '🤖 AI:') + '</b> ' + text;
-            chat.appendChild(p);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const msg = input.value.trim();
-            if (!msg) return;
-            appendMessage('user', msg);
-            input.value = '';
-
-            const res = await fetch('/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({message: msg})
-            });
-            const data = await res.json();
-            if (data.reply) {
-                appendMessage('ai', data.reply);
-            } else {
-                appendMessage('ai', '❌ 错误: ' + data.error);
-            }
-        }
-
-        async function clearHistory() {
-            await fetch('/clear', {method: 'POST'});
-            document.getElementById('chat').innerHTML = '';
-        }
-    </script>
-</body>
-</html>
-'''
-
-@app.route('/')
-def index():
-    return render_template_string(HTML_TEMPLATE)
+# 初始化聊天机器人
+try:
+    bot = ChatBot()
+except Exception as e:
+    print(f"❌ ChatBot 初始化失败: {e}")
+    bot = None
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    if not bot:
+        return jsonify({"reply": "❌ AI 服务未初始化，请检查配置。", "error": "Bot not initialized"})
+    
     data = request.get_json()
-    user_msg = data.get('message', '').strip()
-    if not user_msg:
-        return jsonify({"error": "输入为空"})
-    reply = bot.send_message(user_msg)
-    return jsonify({"reply": reply})
+    message = data.get('message', '')
+    
+    if not message.strip():
+        return jsonify({"reply": "⚠️ 输入为空，请输入有效内容。", "error": None})
+    
+    # 调用 AI
+    ai_reply = bot.send_message(message)
+    
+    return jsonify({
+        "reply": ai_reply,
+        "error": None
+    })
 
-@app.route('/clear', methods=['POST'])
-def clear():
-    bot.clear_history()
-    return jsonify({"status": "cleared"})
+@app.route('/')
+def index():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('chat.html', username=session['username'])
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def do_login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({"success": False, "message": "用户名和密码不能为空"})
+
+    # 加密密码（简单哈希）
+    password_hash = hashlib.md5(password.encode()).hexdigest()
+
+    # 检查是否已存在该用户
+    if username not in users_db:
+        # 新用户 → 注册并设为管理员（第一个注册）
+        users_db[username] = {
+            'password_hash': password_hash,
+            'is_admin': len(users_db) == 0  # 第一个用户是管理员
+        }
+        session['username'] = username
+        return jsonify({"success": True, "message": "注册成功，欢迎！"})
+    else:
+        # 已有用户 → 验证密码
+        if users_db[username]['password_hash'] == password_hash:
+            session['username'] = username
+            return jsonify({"success": True, "message": "登录成功！"})
+        else:
+            return jsonify({"success": False, "message": "用户名或密码错误"})
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     print("🌐 启动 Web 服务... 打开 http://localhost:5000")
-    app.run(host='127.0.0.1', port=5000, debug=False)
+    app.run(host='127.0.0.1', port=5000, debug=True)

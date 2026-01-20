@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>小桂智能体</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; }
+        body {  /* 居中对齐 */
+            background: #f9f9fb;    /* 浅灰背景 */
+            color: #333;    /* 文字颜色 */
+            line-height: 1.6;   /* 行高 */
+        }
+        .container {    /* 主容器 */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {   /* 顶部导航 */
+            display: flex;  /* 水平排列 */
+            justify-content: space-between; /* 两端对齐 */
+            align-items: center;    /* 垂直居中 */
+            padding: 16px 20px; /* 内边距 */
+            background: white;  /* 白色背景 */
+            border-bottom: 1px solid #e5e5e5;   /* 底部边框 */
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05); /* 统一阴影 */
+            border-radius: 12px;    /* 圆角 */
+        }
+        .header-left {  /* 左侧信息 */
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .avatar {   /* 头像 */
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .name { font-weight: bold; font-size: 1.1rem; } /* 名字样式 */
+        .tag { font-size: 0.85rem; color: #666; }   /* 标签样式 */
+        .header-right { /* 右侧按钮组 */
+            display: flex;
+            gap: 12px;
+        }
+        .btn {  /* 按钮通用样式 */
+            padding: 6px 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #4a6cf7; color: white; } /* 主要按钮样式 */
+        .btn-outline { background: white; color: #4a6cf7; border: 1px solid #4a6cf7; }  /* 描边按钮样式 */
+
+        .main { /* 欢迎区样式 */
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05); /* 统一阴影 */
+            text-align: center;
+            margin-top: 20px;
+            overflow-y: auto;
+        }
+        .avatar-big {   /* 大头像样式 */
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #4a6cf7;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+        .welcome { font-size: 1.8rem; font-weight: bold; color: #1a3d72; }  /* 欢迎语样式 */
+        .subtitle { color: #666; margin: 10px 0; }  /* 副标题样式 */
+        .actions {  /* 快捷按钮组 */
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .action-btn {   /* 快捷按钮样式 */
+            padding: 6px 16px;
+            background: #4a6cf7;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .action-btn:hover { background: #3a5ce5; }  /* 按钮悬停效果 */
+
+
+        .smart-input-container { /* 智能输入容器 */
+            display: flex;
+            flex-direction: column;  /* 垂直排列 */
+            gap: 12px;  /* 元素间距 */
+            background: white;  /* 白色背景 */
+            border-radius: 12px;    /* 圆角 */
+            padding: 16px;      /* 内边距 */
+            border: 1px solid #e0e0e0;  /* 边框 */
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);    /* 阴影 */
+            margin-top: 20px;
+        }
+        .input-row { /* 输入行 */
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+        .toolbar-row { /* 工具栏行 */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .spacer { /* 弹性空间 */
+            flex: 1;
+        }
+        .tool-tag { /* 工具标签 */
+            padding: 4px 8px;
+            background: #e9ecef;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .tool-tag:hover { background: #dee2e6; }
+        .main-input { /* 主输入区 */
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 1rem;
+            resize: none;
+            overflow: hidden;
+            min-height: 24px;
+            line-height: 1.4;
+        }
+        .right-actions { /* 右侧操作区 */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-icon { /* 操作图标 */
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .action-icon:hover { background: #e9ecef; }
+        .send-btn-new { /* 发送按钮 */
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #3a5ce5;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .send-btn-new:hover { background: #5a32a3; }
+        .hint { /* 提示文字样式 */
+            font-size: 0.85rem;
+            color: #999;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .voice-toggle { /* 语音开关样式 */
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .voice-toggle:hover { color: #4a6cf7; } /* 语音开关悬停效果 */
+
+        .message {  /* 消息容器样式 */
+            margin: 5px 0;
+        }
+        .message.user { /* 用户消息对齐右侧 */
+            text-align: right;
+        }
+        .message.ai {   /* AI消息对齐左侧 */
+            text-align: left;
+        }
+
+        .bubble {   /* 气泡样式 */
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 18px;
+            position: relative;
+            word-break: break-word;
+            line-height: 1.5;
+            max-width: 70%;
+        }
+        .user .bubble { /* 用户气泡样式 */
+            background: #e3f2fd;
+            border-bottom-right-radius: 4px; 
+        }
+        .ai .bubble {   /* AI气泡样式 */
+            background: #f1f1f1;
+            border-bottom-left-radius: 4px;
+        }
+        .thinking { /* 正在思考样式 */
+            color: #888;
+            font-style: italic;
+        }
+        .welcome-container {    /* 欢迎容器样式 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            min-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <div class="header">
+            <div class="header-left">
+                <img src="/static/images/1746030054873.jpg" class="avatar">
+                <div>
+                    <div class="name">小桂智能体 🌸</div>
+                    <div class="tag">桂电AI学姐 · 在线陪伴</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-outline username-btn">{{ username }}</button> <!-- 用户名变成按钮 -->
+                <button class="btn btn-outline"><i class="fas fa-history"></i> 历史记录</button>
+                <button class="btn btn-outline" onclick="window.location.href='/logout'">退出</button>
+            </div>
+        </div>
+
+        <!-- 中央欢迎区 -->
+        <div class="main">
+            <div id="welcome-content">
+                <img src="/static/images/1746030054873.jpg" class="avatar-big">
+                <div class="welcome">你好呀！我是小桂 ～ ✨</div>
+                <div class="subtitle">桂电学姐 · AI发明社社长 · 随时为你解答校园问题喵 ～</div>
+                <div class="actions">
+                    <button class="action-btn">校园生活咨询</button>
+                    <button class="action-btn">课程信息查询</button>
+                    <button class="action-btn">情感陪伴</button>
+                    <button class="action-btn">轻度整活</button>
+                </div>
+            </div>
+            <!-- 聊天消息区（初始隐藏） -->
+            <div id="messages" style="display: none; width: 100%; flex: 1; overflow-y: auto;"></div>
+        </div>
+
+        <!-- 智能输入容器 -->
+        <div class="smart-input-container">
+            <div class="input-row">
+                <textarea id="userInput" class="main-input" placeholder="向小桂提问喵~" rows="1"></textarea>
+            </div>
+            <div class="toolbar-row">
+                <button class="tool-tag">深度思考</button>
+                <button class="tool-tag">代码</button>
+                <button class="tool-tag">图像</button>
+                <button class="tool-tag">翻译</button>
+                <div class="spacer"></div>
+                <button class="action-icon" title="联网搜索">🌏</button>
+                <button class="action-icon" title="引用链接">🔗</button>
+                <button class="action-icon" title="文件上传">📎</button>
+                <button class="send-btn-new" onclick="sendMessage()">↑</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 获取 DOM 元素
+    const welcomeContent = document.getElementById('welcome-content');
+    const messages = document.getElementById('messages');
+    const userInput = document.getElementById('userInput');
+
+    // 发送消息
+    async function sendMessage() {
+        const msg = userInput.value.trim();
+        if (!msg) return;
+
+        // 1. 隐藏欢迎内容，显示聊天区
+        welcomeContent.style.display = 'none';
+        messages.style.display = 'block';
+
+        // 2. 显示用户消息
+        appendMessage('user', msg);
+
+        // 3. 清空输入框
+        userInput.value = '';
+
+        // 4. 显示“AI 正在思考...”
+        const thinkingDiv = appendMessage('ai', '<span class="thinking">小桂正在思考...</span>');
+
+        try {
+            // 5. 发送请求到后端 /chat
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            });
+            const data = await res.json();
+
+            // 6. 移除“正在思考”消息
+            messages.removeChild(thinkingDiv);
+
+            // 7. 显示 AI 回复
+            if (data.reply) {
+                appendMessage('ai', data.reply);
+            } else {
+                appendMessage('ai', '❌ 小桂暂时不知道怎么回答呢...');
+            }
+        } catch (err) {
+            messages.removeChild(thinkingDiv);
+            appendMessage('ai', '⚠️ 网络出错了，请稍后再试～');
+        }
+    }
+
+    // 创建并添加消息气泡
+    function appendMessage(role, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${role}`;
+        msgDiv.innerHTML = `
+            <div class="bubble">${text}</div>
+        `;
+        messages.appendChild(msgDiv);
+        messages.scrollTop = messages.scrollHeight; // 自动滚动到底部
+        return msgDiv; // 返回元素，方便后续删除
+    }
+
+    // 回车发送
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // 防止换行
+            sendMessage();
+        }
+    });
+
+    // 自动调整输入框高度
+    userInput.addEventListener('input', () => {
+        userInput.style.height = 'auto';
+        userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px'; // 最大高度120px
+    });
+
+    // 页面加载完成时，聚焦输入框
+    window.onload = () => {
+        userInput.focus();
+    };
+    </script>
+</body>
+</html>
